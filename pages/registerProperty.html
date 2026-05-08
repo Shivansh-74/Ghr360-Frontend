@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GHAR360 — Register Property</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .register-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 24px;
+    }
+    @media (max-width: 900px) { .register-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="dashboard-layout">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🏠</div>
+      <div class="brand-text">
+        <h2>GHAR360</h2>
+        <p>Admin Panel</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item">
+        <div class="nav-icon">📊</div> Dashboard
+      </a>
+
+      <div class="nav-section-label">Dealer</div>
+      <a href="registerDealer.html" class="nav-item">
+        <div class="nav-icon">➕</div> Register Dealer
+      </a>
+      <a href="registerProperty.html" class="nav-item active">
+        <div class="nav-icon">🏘</div> Register Property
+      </a>
+      <a href="viewProperties.html" class="nav-item">
+        <div class="nav-icon">🔍</div> View Properties
+      </a>
+
+      <div class="nav-section-label">Location</div>
+      <a href="cityState.html" class="nav-item">
+        <div class="nav-icon">📍</div> City & State
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="avatarInitial">A</div>
+        <div class="user-info">
+          <div class="user-name" id="adminUsername">Admin</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="Auth.logout()">⎋ Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══════════════════════════════════════════ -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title"><span>Register Property</span></div>
+      <div class="topbar-right"><span id="currentDate"></span></div>
+    </div>
+
+    <div class="page-content">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Register <span>Property</span></div>
+          <div class="section-sub">Add a new property listing to the platform</div>
+        </div>
+      </div>
+
+      <!-- ── Step 1: Property Details ─────────────────── -->
+      <div class="card" id="propertyFormCard">
+        <div class="card-title">Property Details</div>
+        <div class="card-subtitle">Fill in the property information below</div>
+
+        <form id="propertyForm">
+          <div class="register-grid">
+            <div class="form-group">
+              <label>Property Type *</label>
+              <select name="type" required>
+                <option value="">Select Type</option>
+                <option value="RENT">For Rent</option>
+                <option value="SALE">For Sale</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Property Dealer</label>
+              <select id="dealerDropdown" name="dealer" required>
+                <option value="">Select Dealer</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Price (₹) *</label>
+              <input type="number" name="price" placeholder="e.g. 15000" required />
+            </div>
+            <div class="form-group">
+              <label>Owner Name *</label>
+              <input type="text" name="ownerName" placeholder="Property owner name" required />
+            </div>
+            <div class="form-group">
+              <label>Owner Contact</label>
+              <input type="text" name="ownerContact" placeholder="Owner phone number" />
+            </div>
+            <div class="form-group">
+              <label>Locality</label>
+              <input type="text" name="locality" placeholder="e.g. MP Nagar Zone 1" />
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <input type="text" name="address" placeholder="Full address" />
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <select id="propStateDropdown" name="stateCode"
+                      onchange="onStateChange('propStateDropdown','propCityDropdown')">
+                <option value="">Select State</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>City</label>
+              <select id="propCityDropdown" name="cityCode">
+                <option value="">Select City</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" step="any" name="lat" placeholder="e.g. 23.2599" />
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" step="any" name="longitude" placeholder="e.g. 77.4126" />
+            </div>
+          </div>
+
+          <div style="margin-top: 16px; display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary" id="propertySubmitBtn" style="max-width:240px;">
+              Register Property
+            </button>
+            <button type="button" class="btn btn-outline" onclick="resetAll()">
+              Clear Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── Step 2: Media Upload (shown after property saved) ── -->
+      <div class="media-upload-panel" id="mediaUploadPanel" style="display:none;">
+
+        <!-- Success banner -->
+        <div class="property-saved-banner">
+          <div class="saved-icon">✅</div>
+          <div>
+            Property registered successfully!
+            Property ID: <span class="saved-id" id="savedPropertyId">—</span>
+            &nbsp;·&nbsp; Dealer: <span class="saved-id" id="savedUserCode">—</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Upload Media</div>
+          <div class="card-subtitle">Add images, videos or 360° photos for this property</div>
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="mediaFiles" multiple
+                   accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/x-msvideo,video/webm" />
+            <div class="drop-zone-icon">📁</div>
+            <div class="drop-zone-text">
+              <strong>Click to browse</strong> or drag & drop files here
+            </div>
+            <div class="drop-zone-hint">JPEG · PNG · WEBP · GIF · MP4 · MOV · AVI · WEBM &nbsp;|&nbsp; Max 10 MB per file</div>
+          </div>
+
+          <!-- Controls row -->
+          <div class="upload-controls">
+            <div class="form-group">
+              <label>Media Type</label>
+              <select id="mediaTypeSelect">
+                <option value="IMAGE">🖼 Image</option>
+                <option value="VIDEO">🎬 Video</option>
+                <option value="VR360">🔮 360° Image</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="uploadBtn" onclick="uploadMedia()" style="max-width:200px;">
+              ⬆ Upload Files
+            </button>
+            <button class="btn btn-outline" onclick="clearPreviews()" style="padding:12px 18px;font-size:12px;">
+              Clear
+            </button>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="upload-progress" id="uploadProgress">
+            <div class="progress-label">
+              <span id="progressText">Uploading...</span>
+              <span id="progressPct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <!-- Preview grid -->
+          <div class="preview-grid" id="previewGrid"></div>
+
+          <!-- Uploaded results -->
+          <div class="uploaded-list" id="uploadedList"></div>
+
+          <!-- Skip / Done -->
+          <div style="margin-top: 24px; display:flex; gap:12px;">
+            <a href="viewProperties.html" class="btn btn-outline" style="max-width:200px; text-decoration:none;">
+              View Properties →
+            </a>
+            <button class="btn btn-outline" onclick="resetAll()" style="max-width:200px;">
+              + Register Another
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+
+  <script src="../js/utils.js"></script>
+  <script>
+    // ── Auth & Init ──────────────────────────────────────
+    Auth.requireAuth();
+    UI.setUserInfo();
+
+    const user = Auth.getUser();
+    if (user) {
+      document.getElementById('adminUsername').textContent = user.username;
+      document.getElementById('avatarInitial').textContent = user.username.charAt(0).toUpperCase();
+    }
+
+    document.getElementById('currentDate').textContent =
+      new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    // ── State ────────────────────────────────────────────
+    const MAX_FILE_SIZE  = 10 * 1024 * 1024; // 10 MB
+    const ALLOWED_TYPES  = ['image/jpeg','image/png','image/webp','image/gif',
+                             'video/mp4','video/quicktime','video/x-msvideo','video/webm'];
+
+    let selectedFiles    = [];   // validated File objects
+    let currentPropertyId = null;
+    let currentUserCode   = null;
+
+    // ── Step 1: Register Property ────────────────────────
+    document.getElementById('propertyForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('propertySubmitBtn');
+
+      await Form.submit(this, btn,
+        async (data) => {
+          if (data.price)     data.price     = parseFloat(data.price);
+          if (data.lat)       data.lat       = parseFloat(data.lat);
+          if (data.longitude) data.longitude = parseFloat(data.longitude);
+          return await API.registerProperty(data);
+        },
+        (res) => {
+          // res.data should contain the saved property with id and dealer.username
+          const property = res.data;
+          currentPropertyId = property?.id || property?.propertyId;
+          currentUserCode   = property?.dealerCode || property?.dealer || user?.username;
+
+          // Persist for page refresh resilience
+          localStorage.setItem('ghr360_last_property_id', currentPropertyId);
+          localStorage.setItem('ghr360_last_user_code',   currentUserCode);
+
+          showMediaPanel(currentPropertyId, currentUserCode);
+        }
+      );
+    });
+
+    function showMediaPanel(propertyId, userCode) {
+      document.getElementById('savedPropertyId').textContent = propertyId;
+      document.getElementById('savedUserCode').textContent   = userCode;
+      document.getElementById('mediaUploadPanel').style.display = 'block';
+      document.getElementById('mediaUploadPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── File Selection & Validation ──────────────────────
+    const fileInput  = document.getElementById('mediaFiles');
+    const dropZone   = document.getElementById('dropZone');
+    const previewGrid = document.getElementById('previewGrid');
+
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    // Drag & drop
+    dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(fileList) {
+      const newFiles = Array.from(fileList);
+      let rejected = 0;
+
+      newFiles.forEach(file => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          rejected++;
+          return Toast.show(`"${file.name}" — unsupported type`, 'error');
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          rejected++;
+          return Toast.show(`"${file.name}" exceeds 10 MB limit`, 'error');
+        }
+        // Avoid duplicates by name+size
+        const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!exists) selectedFiles.push(file);
+      });
+
+      if (newFiles.length - rejected > 0) renderPreviews();
+    }
+
+    function renderPreviews() {
+      previewGrid.innerHTML = '';
+      selectedFiles.forEach((file, idx) => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+
+        const isVideo = file.type.startsWith('video/');
+        const url     = URL.createObjectURL(file);
+
+        item.innerHTML = `
+          ${isVideo
+            ? `<video src="${url}" muted playsinline></video>`
+            : `<img src="${url}" alt="${file.name}" />`}
+          <span class="preview-type-badge">${isVideo ? 'VIDEO' : 'IMG'}</span>
+          <span class="preview-name">${file.name}</span>
+          <button class="preview-remove" onclick="removeFile(${idx})" title="Remove">✕</button>
+        `;
+        previewGrid.appendChild(item);
+      });
+    }
+
+    function removeFile(idx) {
+      URL.revokeObjectURL(previewGrid.children[idx]?.querySelector('img,video')?.src);
+      selectedFiles.splice(idx, 1);
+      renderPreviews();
+    }
+
+    function clearPreviews() {
+      selectedFiles = [];
+      previewGrid.innerHTML = '';
+      fileInput.value = '';
+    }
+
+    // ── Step 2: Upload Media ─────────────────────────────
+    async function uploadMedia() {
+      const propertyId = currentPropertyId || localStorage.getItem('ghr360_last_property_id');
+      const userCode   = currentUserCode   || localStorage.getItem('ghr360_last_user_code');
+      const mediaType  = document.getElementById('mediaTypeSelect').value;
+
+      if (!propertyId) return Toast.show('No property selected. Register a property first.', 'error');
+      if (selectedFiles.length === 0) return Toast.show('Please select at least one file.', 'error');
+
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Uploading...';
+
+      showProgress(0, `Uploading ${selectedFiles.length} file(s)...`);
+
+      const formData = new FormData();
+      selectedFiles.forEach(file => formData.append('files', file));
+      formData.append('propertyId', propertyId);
+      formData.append('userCode',   userCode);
+      formData.append('mediaType',  mediaType);
+
+      try {
+        const res = await API.uploadMedia(formData);
+        const uploaded = res.data || [];
+
+        showProgress(100, `${uploaded.length} file(s) uploaded`);
+        renderUploadedList(uploaded);
+        clearPreviews();
+        Toast.show(res.message || `${uploaded.length} file(s) uploaded successfully`, 'success');
+
+      } catch (err) {
+        hideProgress();
+        Toast.show(err.message || 'Upload failed', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '⬆ Upload Files';
+      }
+    }
+
+    // ── Progress helpers ─────────────────────────────────
+    function showProgress(pct, label) {
+      const bar = document.getElementById('uploadProgress');
+      bar.classList.add('visible');
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPct').textContent  = pct + '%';
+      document.getElementById('progressText').textContent = label;
+    }
+
+    function hideProgress() {
+      document.getElementById('uploadProgress').classList.remove('visible');
+    }
+
+    // ── Render uploaded results ──────────────────────────
+    function renderUploadedList(items) {
+      const list = document.getElementById('uploadedList');
+      items.forEach(item => {
+        const isVideo = item.mediaType === 'VIDEO';
+        const el = document.createElement('div');
+        el.className = 'uploaded-item';
+        el.dataset.mediaId = item.id;
+        el.innerHTML = `
+          ${isVideo
+            ? `<video class="uploaded-thumb" src="${item.url}" muted></video>`
+            : `<img  class="uploaded-thumb" src="${item.url}" alt="media" />`}
+          <div class="uploaded-info">
+            <span style="font-weight:600;color:var(--white);">${item.mediaType}</span>
+            <a class="uploaded-url" href="${item.url}" target="_blank" title="${item.url}">${item.url}</a>
+          </div>
+          <button class="uploaded-del" onclick="deleteUploaded(${item.id}, this)">Delete</button>
+        `;
+        list.prepend(el);
+      });
+    }
+
+    async function deleteUploaded(mediaId, btn) {
+      if (!confirm('Delete this media from Cloudinary?')) return;
+      btn.textContent = '...';
+      btn.disabled = true;
+      try {
+        await API.deleteMedia(mediaId);
+        btn.closest('.uploaded-item').remove();
+        Toast.show('Media deleted', 'success');
+      } catch (err) {
+        btn.textContent = 'Delete';
+        btn.disabled = false;
+        Toast.show(err.message || 'Delete failed', 'error');
+      }
+    }
+
+    // ── Reset everything ─────────────────────────────────
+    function resetAll() {
+      document.getElementById('propertyForm').reset();
+      clearPreviews();
+      document.getElementById('uploadedList').innerHTML = '';
+      hideProgress();
+      document.getElementById('mediaUploadPanel').style.display = 'none';
+      currentPropertyId = null;
+      currentUserCode   = null;
+      localStorage.removeItem('ghr360_last_property_id');
+      localStorage.removeItem('ghr360_last_user_code');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Dropdowns ────────────────────────────────────────
+    loadDropdown({
+      endpoint: '/api/users/getUserMap',
+      dropdownId: 'dealerDropdown',
+      placeholder: 'Select Dealer'
+    });
+
+    loadLocationDropdown('propStateDropdown', null);
+
+    function onStateChange(stateDdId, cityDdId) {
+      const stateCode = document.getElementById(stateDdId).value;
+      const cityDd    = document.getElementById(cityDdId);
+      cityDd.innerHTML = '<option value="">Select City</option>';
+      if (stateCode) loadLocationDropdown(cityDdId, stateCode);
+    }
+
+    async function loadLocationDropdown(ddId, stateCode) {
+      const endpoint = stateCode
+        ? `/api/location/map/cities/${stateCode}`
+        : '/api/location/map/states';
+      try {
+        const res = await API.get(endpoint, false);
+        const dd  = document.getElementById(ddId);
+        const map = res.data || {};
+        Object.entries(map).forEach(([code, name]) => {
+          dd.add(new Option(`${name} (${code})`, code));
+        });
+      } catch (e) {
+        console.error('Location dropdown failed', e);
+      }
+    }
+
+    // ── Restore panel if page reloaded mid-session ───────
+    (function restoreSession() {
+      const pid  = localStorage.getItem('ghr360_last_property_id');
+      const code = localStorage.getItem('ghr360_last_user_code');
+      if (pid && code) {
+        currentPropertyId = pid;
+        currentUserCode   = code;
+        showMediaPanel(pid, code);
+      }
+    })();
+  </script>
+</body>
+</html>

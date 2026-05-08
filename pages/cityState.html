@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GHAR360 — City & State</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .split-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) { .split-panel { grid-template-columns: 1fr; } }
+
+    .add-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .input-row .code-input {
+      width: 90px;
+    }
+
+    .add-block input,
+    .add-block select {
+      width: 100%;
+      height: 50px;
+      font-size: 14px;
+      padding: 0 16px;
+      border-radius: 10px;
+      box-sizing: border-box;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--soft-white);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .add-block input::placeholder { color: rgba(255,255,255,0.25); }
+
+    .add-block input:focus,
+    .add-block select:focus {
+      border-color: rgba(212,175,55,0.45);
+      background: rgba(212,175,55,0.03);
+    }
+
+    .add-block select option {
+      background: #0d1e30;
+      color: #fff;
+    }
+
+    .code-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      margin-top: -4px;
+      padding-left: 4px;
+    }
+
+    .btn-add {
+      width: 100%;
+      height: 48px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      margin-top: 2px;
+    }
+
+    .items-list {
+      margin-top: 4px;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+
+    .item-row:hover {
+      border-color: rgba(212,175,55,0.2);
+      background: rgba(212,175,55,0.03);
+    }
+
+    .item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--soft-white);
+    }
+
+    .item-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 3px;
+    }
+
+    .code-tag {
+      display: inline-block;
+      background: rgba(212,175,55,0.12);
+      color: var(--gold);
+      border: 1px solid rgba(212,175,55,0.25);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 11px;
+      border-radius: 6px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-sm-del {
+      background: rgba(224,85,85,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(224,85,85,0.2);
+    }
+    .btn-sm-del:hover { background: rgba(224,85,85,0.25); }
+
+    .count-badge {
+      display: inline-block;
+      background: rgba(212,175,55,0.12);
+      color: var(--gold);
+      border: 1px solid rgba(212,175,55,0.25);
+      border-radius: 20px;
+      padding: 1px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .loading-row {
+      text-align: center;
+      padding: 24px;
+      color: rgba(255,255,255,0.25);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body class="dashboard-layout">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🏠</div>
+      <div class="brand-text">
+        <h2>GHAR360</h2>
+        <p>Admin Panel</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item">
+        <div class="nav-icon">📊</div> Dashboard
+      </a>
+
+      <div class="nav-section-label">Dealer</div>
+      <a href="registerDealer.html" class="nav-item">
+        <div class="nav-icon">➕</div> Register Dealer
+      </a>
+      <a href="registerProperty.html" class="nav-item">
+        <div class="nav-icon">🏘</div> Register Property
+      </a>
+      <a href="viewProperties.html" class="nav-item">
+        <div class="nav-icon">🔍</div> View Properties
+      </a>
+
+      <div class="nav-section-label">Location</div>
+      <a href="cityState.html" class="nav-item active">
+        <div class="nav-icon">📍</div> City & State
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="avatarInitial">A</div>
+        <div class="user-info">
+          <div class="user-name" id="adminUsername">Admin</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="Auth.logout()">⎋ Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══════════════════════════════════════════ -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title"><span>City & State</span></div>
+      <div class="topbar-right"><span id="currentDate"></span></div>
+    </div>
+
+    <div class="page-content">
+      <div class="section-header">
+        <div>
+          <div class="section-title">City & <span>State</span></div>
+          <div class="section-sub">Manage location master data</div>
+        </div>
+      </div>
+
+      <div class="split-panel">
+
+        <!-- ══ STATE PANEL ═══════════════════════════════ -->
+        <div class="card">
+          <div class="card-title">
+            States
+            <span class="count-badge" id="stateCount">0</span>
+          </div>
+          <div class="card-subtitle">Add state with a unique short code (e.g. MP, MH, DL)</div>
+
+          <div class="add-block">
+            <input
+              type="text"
+              id="stateName"
+              placeholder="State name (e.g. Madhya Pradesh)"
+            />
+            <div class="input-row">
+              <input
+                type="text"
+                id="stateCode"
+                placeholder="Code (e.g. MP)"
+                maxlength="5"
+                style="text-transform:uppercase;"
+                onkeydown="if(event.key==='Enter') addState()"
+              />
+            </div>
+            <div class="code-hint">Code: uppercase, max 5 chars, no spaces (e.g. MP, MH, GJ)</div>
+            <button class="btn btn-primary btn-add" onclick="addState()">
+              + Add State
+            </button>
+          </div>
+
+          <div class="items-list" id="statesList">
+            <div class="loading-row">Loading states...</div>
+          </div>
+        </div>
+
+        <!-- ══ CITY PANEL ════════════════════════════════ -->
+        <div class="card">
+          <div class="card-title">
+            Cities
+            <span class="count-badge" id="cityCount">0</span>
+          </div>
+          <div class="card-subtitle">Add city with a unique code and select its parent state</div>
+
+          <div class="add-block">
+            <input
+              type="text"
+              id="cityName"
+              placeholder="City name (e.g. Bhopal)"
+            />
+            <input
+              type="text"
+              id="cityCode"
+              placeholder="Code (e.g. BPL)"
+              maxlength="5"
+              style="text-transform:uppercase;"
+            />
+            <select id="cityStateDropdown">
+              <option value="">— Select Parent State —</option>
+            </select>
+            <div class="code-hint">Code: uppercase, max 5 chars, no spaces (e.g. BPL, IND, MUM)</div>
+            <button class="btn btn-primary btn-add" onclick="addCity()">
+              + Add City
+            </button>
+          </div>
+
+          <div class="items-list" id="citiesList">
+            <div class="loading-row">Loading cities...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script>
+    Auth.requireAuth();
+    UI.setUserInfo();
+
+    const user = Auth.getUser();
+    if (user) {
+      document.getElementById('adminUsername').textContent = user.username;
+      document.getElementById('avatarInitial').textContent = user.username.charAt(0).toUpperCase();
+    }
+
+    document.getElementById('currentDate').textContent =
+      new Date().toLocaleDateString('en-IN', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+    const BASE = '/api/location';
+    const CODE_RE = /^[A-Z0-9]{1,5}$/;
+
+    // ── Validate code ───────────────────────────────────
+    function validateCode(code, label) {
+      if (!code) { Toast.show(`${label} code is required`, 'error'); return false; }
+      if (!CODE_RE.test(code)) {
+        Toast.show(`${label} code must be uppercase, max 5 chars, no spaces`, 'error');
+        return false;
+      }
+      return true;
+    }
+
+    // ── Load States List ────────────────────────────────
+    async function loadStates() {
+      const el = document.getElementById('statesList');
+      try {
+        const res    = await API.get(`${BASE}/states`, false);
+        const states = res.data || [];
+        document.getElementById('stateCount').textContent = states.length;
+
+        if (!states.length) {
+          el.innerHTML = '<div class="empty-state" style="padding:30px;"><p>No states added yet</p></div>';
+          return;
+        }
+
+        el.innerHTML = states.map(s => `
+          <div class="item-row">
+            <div>
+              <div class="item-name">🗺 ${s.name} <span class="code-tag">${s.code}</span></div>
+              <div class="item-sub">ID: ${s.id}</div>
+            </div>
+            <div class="item-actions">
+              <button class="btn-sm btn-sm-del" onclick="deleteLocation(${s.id}, 'state')">Delete</button>
+            </div>
+          </div>`).join('');
+
+      } catch (e) {
+        el.innerHTML = `<div class="empty-state" style="padding:20px;"><p>States load failed</p></div>`;
+      }
+    }
+
+    // ── Load Cities List ────────────────────────────────
+    async function loadCities() {
+      const el = document.getElementById('citiesList');
+      try {
+        const res    = await API.get(`${BASE}/all`, false);
+        const cities = (res.data || []).filter(x => x.type === 'CITY');
+        document.getElementById('cityCount').textContent = cities.length;
+
+        if (!cities.length) {
+          el.innerHTML = '<div class="empty-state" style="padding:30px;"><p>No cities added yet</p></div>';
+          return;
+        }
+
+        el.innerHTML = cities.map(c => `
+          <div class="item-row">
+            <div>
+              <div class="item-name">📍 ${c.name} <span class="code-tag">${c.code}</span></div>
+              <div class="item-sub">State: ${c.parentName || c.parentCode || '—'}</div>
+            </div>
+            <div class="item-actions">
+              <button class="btn-sm btn-sm-del" onclick="deleteLocation(${c.id}, 'city')">Delete</button>
+            </div>
+          </div>`).join('');
+
+      } catch (e) {
+        el.innerHTML = `<div class="empty-state" style="padding:20px;"><p>Cities load failed</p></div>`;
+      }
+    }
+
+    // ── Populate State Dropdown (value = stateCode) ─────
+    async function loadStatesDropdown() {
+      try {
+        const res    = await API.get(`${BASE}/states`, false);
+        const states = res.data || [];
+        const dd     = document.getElementById('cityStateDropdown');
+
+        dd.innerHTML = `<option value="">— Select Parent State —</option>`;
+        states.forEach(s => {
+          const opt       = document.createElement('option');
+          opt.value       = s.code;           // send stateCode, not id
+          opt.textContent = `${s.name} (${s.code})`;
+          dd.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Dropdown failed', e);
+      }
+    }
+
+    // ── Add State ───────────────────────────────────────
+    async function addState() {
+      const name = document.getElementById('stateName').value.trim();
+      const code = document.getElementById('stateCode').value.trim().toUpperCase();
+
+      if (!name) return Toast.show('State name is required', 'error');
+      if (!validateCode(code, 'State')) return;
+
+      try {
+        await API.post(`${BASE}/add`, { type: 'STATE', name, code }, true);
+
+        document.getElementById('stateName').value = '';
+        document.getElementById('stateCode').value = '';
+        Toast.show(`${name} (${code}) added`, 'success');
+
+        await loadStates();
+        await loadStatesDropdown();
+      } catch (e) {
+        Toast.show(e.message || 'State add failed', 'error');
+      }
+    }
+
+    // ── Add City ────────────────────────────────────────
+    async function addCity() {
+      const name       = document.getElementById('cityName').value.trim();
+      const code       = document.getElementById('cityCode').value.trim().toUpperCase();
+      const parentCode = document.getElementById('cityStateDropdown').value;
+
+      if (!name)       return Toast.show('City name is required', 'error');
+      if (!validateCode(code, 'City')) return;
+      if (!parentCode) return Toast.show('Please select a parent state', 'error');
+
+      try {
+        await API.post(`${BASE}/add`, { type: 'CITY', name, code, parentCode }, true);
+
+        document.getElementById('cityName').value         = '';
+        document.getElementById('cityCode').value         = '';
+        document.getElementById('cityStateDropdown').value = '';
+        Toast.show(`${name} (${code}) added`, 'success');
+
+        await loadCities();
+      } catch (e) {
+        Toast.show(e.message || 'City add failed', 'error');
+      }
+    }
+
+    // ── Delete ──────────────────────────────────────────
+    async function deleteLocation(id, label) {
+      if (!confirm(`Delete this ${label}?`)) return;
+
+      try {
+        await API.patch(`${BASE}/deactivate/${id}`);
+        Toast.show('Deleted successfully', 'success');
+
+        await loadStates();
+        await loadCities();
+        await loadStatesDropdown();
+      } catch (e) {
+        Toast.show(e.message || 'Delete failed', 'error');
+      }
+    }
+
+    // ── Init ────────────────────────────────────────────
+    loadStates();
+    loadCities();
+    loadStatesDropdown();
+  </script>
+</body>
+</html>

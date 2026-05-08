@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GHAR360 — Admin Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .error-msg {
+      background: rgba(224,85,85,0.1);
+      border: 1px solid rgba(224,85,85,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #e05555;
+      margin-bottom: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-msg.show { display: flex; }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 1px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper input {
+      padding-right: 44px;
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: rgba(255,255,255,0.3);
+      font-size: 16px;
+      user-select: none;
+      transition: color 0.2s;
+    }
+
+    .toggle-pass:hover { color: var(--gold); }
+
+    .gold-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: rgba(255,255,255,0.2);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .gold-line::before, .gold-line::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(212,175,55,0.15);
+    }
+
+    .bg-elements {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%);
+    }
+
+    .bg-circle-1 { width: 600px; height: 600px; top: -200px; left: -200px; }
+    .bg-circle-2 { width: 400px; height: 400px; bottom: -100px; right: -100px; }
+  </style>
+</head>
+<body class="login-page">
+
+  <div class="bg-elements">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+  </div>
+
+  <div class="login-card">
+    <!-- Brand -->
+    <div class="login-brand">
+      <div class="brand-icon">🏠</div>
+      <h1>GHAR360</h1>
+      <p>Admin Control Panel</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-msg" id="errorMsg">
+      <span>⚠</span>
+      <span id="errorText">Invalid credentials</span>
+    </div>
+
+    <!-- Form -->
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter your username"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+          />
+          <span class="toggle-pass" id="togglePass">👁</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        Sign In to Admin Panel
+      </button>
+    </form>
+
+    <div class="gold-line">GHAR360 • EXPLORE • EXPERIENCE • FIND HOME</div>
+
+    <div class="login-footer">
+      © 2024 GHAR360 — Admin Access Only
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (Auth.isLoggedIn()) {
+      window.location.href = 'pages/dashboard.html';
+    }
+
+    // Toggle password visibility
+    document.getElementById('togglePass').addEventListener('click', function () {
+      const inp = document.getElementById('password');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        this.textContent = '🙈';
+      } else {
+        inp.type = 'password';
+        this.textContent = '👁';
+      }
+    });
+
+    // Login form submit
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const errorMsg  = document.getElementById('errorMsg');
+      const errorText = document.getElementById('errorText');
+      const loginBtn  = document.getElementById('loginBtn');
+
+      errorMsg.classList.remove('show');
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<span class="spinner"></span> Signing In...';
+
+      const data = Form.collect(this);
+
+      try {
+        const res = await API.login(data);
+
+        if (res.success && res.data) {
+          Auth.saveSession(res.data);
+
+          // Only ADMIN allowed in admin panel
+          if (res.data.userType !== 'ADMIN') {
+            Auth.logout();
+            errorText.textContent = 'Access denied. Admin only.';
+            errorMsg.classList.add('show');
+            return;
+          }
+
+          Toast.show('Welcome back, ' + res.data.username + '!', 'success');
+          setTimeout(() => {
+            window.location.href = 'pages/dashboard.html';
+          }, 800);
+        } else {
+          throw new Error(res.message || 'Login failed');
+        }
+      } catch (err) {
+        errorText.textContent = err.message || 'Invalid username or password';
+        errorMsg.classList.add('show');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Sign In to Admin Panel';
+      }
+    });
+  </script>
+</body>
+</html>
