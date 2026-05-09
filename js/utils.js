@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════
 
 const CONFIG = {
-  BASE_URL: 'http://localhost:8090',
+  BASE_URL: 'https://ghr360.onrender.com',
   TOKEN_KEY: 'ghr360_token',
   USER_KEY: 'ghr360_user',
 };
