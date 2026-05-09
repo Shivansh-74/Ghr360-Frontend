@@ -44,12 +44,12 @@ const Auth = {
     }
     localStorage.removeItem(CONFIG.TOKEN_KEY);
     localStorage.removeItem(CONFIG.USER_KEY);
-    window.location.href = '../login.html';
+    window.location.href = '../index.html';
   },
 
   requireAuth() {
     if (!this.isLoggedIn()) {
-      window.location.href = '../login.html';
+      window.location.href = '../index.html';
     }
   },
 
